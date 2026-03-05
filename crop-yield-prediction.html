@@ -1,0 +1,329 @@
+ne <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crop Yield Prediction | ML Model</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Crop Yield Prediction Specific Styles */
+        .crop-prediction-section {
+            padding: 80px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .prediction-container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .prediction-header {
+            text-align: center;
+            color: white;
+            margin-bottom: 3rem;
+        }
+
+        .prediction-header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .prediction-header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .prediction-form {
+            background: white;
+            border-radius: 20px;
+            padding: 2.5rem;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+            font-size: 0.95rem;
+        }
+
+        .form-group input,
+        .form-group select {
+            padding: 14px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s;
+            background: #f8f9fa;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+        }
+
+        .predict-button {
+            grid-column: 1 / -1;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 18px 40px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .predict-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        .result-container {
+            margin-top: 2rem;
+            padding: 2rem;
+            border-radius: 15px;
+            display: none;
+        }
+
+        .result-container.show {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .result-success {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+        }
+
+        .result-error {
+            background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);
+            color: white;
+        }
+
+        .result-value {
+            font-size: 3rem;
+            font-weight: bold;
+            margin: 1rem 0;
+        }
+
+        .result-unit {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .result-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 2px solid rgba(255,255,255,0.3);
+        }
+
+        .result-item {
+            text-align: center;
+        }
+
+        .result-item-label {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        .result-item-value {
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .model-info {
+            margin-top: 2rem;
+            padding: 1.5rem;
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            color: white;
+        }
+
+        .model-info h3 {
+            margin-bottom: 1rem;
+        }
+
+        .model-info p {
+            font-size: 0.95rem;
+            line-height: 1.6;
+            opacity: 0.9;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-bottom: 2rem;
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+            transition: opacity 0.3s;
+        }
+
+        .back-link:hover {
+            opacity: 0.8;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .info-icon {
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            background: #667eea;
+            color: white;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 18px;
+            font-size: 12px;
+            margin-left: 5px;
+            cursor: help;
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="container">
+            <div class="logo">
+                <img src="https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=40&h=40&fit=crop" alt="Logo" style="width: 40px; height: 40px; border-radius: 50%; vertical-align: middle; margin-right: 10px;">
+                Crop Yield Prediction
+            </div>
+            <ul class="nav-links">
+                <li><a href="index.html">← Back to Portfolio</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <section class="crop-prediction-section">
+        <div class="prediction-container">
+            <a href="index.html" class="back-link">← Back to Portfolio</a>
+            
+            <div class="prediction-header">
+                <h1>🌾 Crop Yield Prediction</h1>
+                <p>Machine Learning Model for Predicting Agricultural Output</p>
+            </div>
+
+            <form class="prediction-form" id="predictionForm">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="cropType">Crop Type <span class="info-icon" title="Select the type of crop">?</span></label>
+                        <select id="cropType" required>
+                            <option value="">Select Crop</option>
+                            <option value="wheat">Wheat</option>
+                            <option value="rice">Rice</option>
+                            <option value="corn">Corn</option>
+                            <option value="cotton">Cotton</option>
+                            <option value="soybean">Soybean</option>
+                            <option value="potato">Potato</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="soilType">Soil Type <span class="info-icon" title="Type of soil affecting yield">?</span></label>
+                        <select id="soilType" required>
+                            <option value="">Select Soil</option>
+                            <option value="clay">Clay Soil</option>
+                            <option value="sandy">Sandy Soil</option>
+                            <option value="loamy">Loamy Soil</option>
+                            <option value="silty">Silty Soil</option>
+                            <option value="peaty">Peaty Soil</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="area">Area (Hectares) <span class="info-icon" title="Total cultivation area">?</span></label>
+                        <input type="number" id="area" min="0.1" max="10000" step="0.1" placeholder="e.g., 10" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="rainfall">Rainfall (mm) <span class="info-icon" title="Annual rainfall in millimeters">?</span></label>
+                        <input type="number" id="rainfall" min="0" max="5000" step="1" placeholder="e.g., 800" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="temperature">Temperature (°C) <span class="info-icon" title="Average temperature in Celsius">?</span></label>
+                        <input type="number" id="temperature" min="-20" max="60" step="0.1" placeholder="e.g., 25" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="humidity">Humidity (%) <span class="info-icon" title="Average humidity percentage">?</span></label>
+                        <input type="number" id="humidity" min="0" max="100" step="1" placeholder="e.g., 65" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="fertilizer">Fertilizer (kg/hectare) <span class="info-icon" title="Amount of fertilizer used per hectare">?</span></label>
+                        <input type="number" id="fertilizer" min="0" max="1000" step="1" placeholder="e.g., 120" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="pesticides">Pesticides (kg/hectare) <span class="info-icon" title="Amount of pesticides used per hectare">?</span></label>
+                        <input type="number" id="pesticides" min="0" max="500" step="0.1" placeholder="e.g., 5" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="ph">Soil pH Level <span class="info-icon" title="Soil acidity/basicity (0-14)">?</span></label>
+                        <input type="number" id="ph" min="0" max="14" step="0.1" placeholder="e.g., 6.5" required>
+                    </div>
+
+                    <button type="submit" class="predict-button" id="predictBtn">
+                        🔮 Predict Yield
+                    </button>
+                </div>
+
+                <div class="result-container" id="resultContainer">
+                    <!-- Results will be displayed here -->
+                </div>
+            </form>
+
+            <div class="model-info">
+                <h3>📊 About This Model</h3>
+                <p>This crop yield prediction model uses <strong>Multiple Linear Regression</strong> algorithm trained on historical agricultural data. The model considers various environmental and agricultural factors including rainfall, temperature, humidity, soil conditions, and fertilizer usage to predict the expected crop yield per hectare.</p>
+                <p style="margin-top: 1rem;"><strong>Note:</strong> This is a demonstration model. For production use, it should be trained on region-specific data with more features and larger datasets.</p>
+            </div>
+        </div>
+    </section>
+
+    <script src="crop-yield-prediction.js"></script>
+</body>
+</html>
+
